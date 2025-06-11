@@ -6,6 +6,8 @@ let classifier;
 let modelURL = "https://teachablemachine.withgoogle.com/models/zPFXk5dVn/";
 // Variable to hold the logo
 let logo;
+// Variable for animation timing
+let time = 0;
 
 function preload() {
   classifier = ml5.imageClassifier(modelURL + "model.json");
@@ -66,14 +68,29 @@ function draw() {
   fill(0,0,0,20); // Gray background for bar
   rect(barX/2, barY, barWidth, barHeight+10, 20); // Rounded corners with 10px radius
   if (typeof confidence !== 'undefined') {
-    fill(0, 255, 0,70); // Green fill for confidence
-    let fillWidth = barWidth * confidence;
-    rect(barX - barWidth / 2, barY, fillWidth, barHeight+10, 20); // Confidence-proportional width with rounded corners
-    // Display confidence percentage inside the bar
-    textSize(16);
-    textAlign(CENTER, CENTER);
-    fill(0); // Black text for readability
-    text(Math.round(confidence * 100) + "%", barX, barY + barHeight / 2+5);
+    if (label === "Analyzing ...") {
+      console.log("Detected Analyzing...");
+      time += 0.05; // Increment time for animation
+      let bounceFactor = (sin(time) + 1) / 4 + 0.4; // Maps sin(-1 to 1) to 0.4 to 0.5
+      let fillWidth = barWidth * bounceFactor;
+      fill(255, 0, 0, 50); // Red with 70% opacity (255 * 0.7 = 179)
+      rect(barX - barWidth / 2, barY, fillWidth, barHeight+10, 20); // Confidence-proportional width with rounded corners
+      // Display confidence percentage inside the bar
+      textSize(16);
+      textAlign(CENTER, CENTER);
+      fill(0); // Black text for readability
+      text(Math.round(bounceFactor * 100) + "%", barX, barY + barHeight / 2+5);
+    } else {
+      // Normal behavior for other labels
+      fill(0, 255, 0, 70); // Green fill for confidence with 70% opacity
+      let fillWidth = barWidth * confidence;
+      rect(barX - barWidth / 2, barY, fillWidth, barHeight+10, 20); // Confidence-proportional width with rounded corners
+      // Display confidence percentage inside the bar
+      textSize(16);
+      textAlign(CENTER, CENTER);
+      fill(0); // Black text for readability
+      text(Math.round(confidence * 100) + "%", barX, barY + barHeight / 2+5);
+    }
   }
 }
 
