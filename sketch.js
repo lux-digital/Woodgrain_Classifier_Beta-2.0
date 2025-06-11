@@ -29,34 +29,52 @@ function classifyVideo() {
 
 function draw() {
   background(255);
+  // Fill the canvas with the video, maintaining aspect ratio
   let videoAspect = video.width / video.height;
-  let canvasAspect = windowWidth / windowHeight;
-  let displayWidth, displayHeight;
+  let canvasAspect = width / height;
+  let displayWidth, displayHeight, xOffset, yOffset;
   if (videoAspect > canvasAspect) {
-    displayWidth = windowWidth;
-    displayHeight = windowWidth / videoAspect;
+    displayWidth = width;
+    displayHeight = width / videoAspect;
+    yOffset = (height - displayHeight) / 2;
+    xOffset = 0;
   } else {
-    displayHeight = windowHeight;
-    displayWidth = windowHeight * videoAspect;
+    displayHeight = height;
+    displayWidth = height * videoAspect;
+    xOffset = (width - displayWidth) / 2;
+    yOffset = 0;
   }
-  image(video, 0, 0, displayWidth, displayHeight);
+  image(video, xOffset, yOffset, displayWidth, displayHeight);
 
   // Center the logo at the top with dynamic size
-  let logoSize = min(200, displayWidth * 0.3); // Limit logo size to 200px or 30% of video width
+  let logoSize = min(200, width * 0.3); // Limit logo size to 200px or 30% of canvas width
   let logoHeight = logoSize * (logo.height / logo.width); // Maintain aspect ratio
   image(logo, (width - logoSize) / 2, 20, logoSize, logoHeight); // Centered at top with 20px padding
 
-  // Label background and text
-  noStroke();
-  fill(0, 0, 0, 150); // Semi-transparent black background
-  rectMode(CENTER);
-  
-  let labelHeight = 100;
-
+  // Center the label text
   textSize(32);
   textAlign(CENTER, CENTER);
   fill(255);
-  text(label, displayWidth/ 2, displayHeight/ 2);
+  text(label, width / 2, height / 2);
+
+  // Draw confidence bar below the label with rounded corners
+  let barHeight = 20;
+  let barY = height / 2 + 40; // 40px below the label
+  let barWidth = width * 0.5; // Half the screen width
+  let barX = width / 2; // Centered horizontally
+  noStroke();
+  fill(0,0,0,20); // Gray background for bar
+  rect(barX/2, barY, barWidth, barHeight+10, 20); // Rounded corners with 10px radius
+  if (typeof confidence !== 'undefined') {
+    fill(0, 255, 0,70); // Green fill for confidence
+    let fillWidth = barWidth * confidence;
+    rect(barX - barWidth / 2, barY, fillWidth, barHeight+10, 20); // Confidence-proportional width with rounded corners
+    // Display confidence percentage inside the bar
+    textSize(16);
+    textAlign(CENTER, CENTER);
+    fill(0); // Black text for readability
+    text(Math.round(confidence * 100) + "%", barX, barY + barHeight / 2+5);
+  }
 }
 
 // Get the classification
@@ -66,5 +84,6 @@ function gotResults(error, results) {
     return;
   }
   label = results[0].label;
+  confidence = results[0].confidence; // Store confidence value
   classifyVideo();
 }
