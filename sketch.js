@@ -86,10 +86,10 @@ function draw() {
       let fillWidth = barWidth * confidence;
       rect(barX - barWidth / 2, barY, fillWidth, barHeight+10, 20); // Confidence-proportional width with rounded corners
       // Display confidence percentage inside the bar
-      textSize(16);
+      textSize(120);
       textAlign(CENTER, CENTER);
-      fill(0); // Black text for readability
-      text(Math.round(confidence * 100) + "%", barX, barY + barHeight / 2+5);
+      fill(0,150,0,50); // Black text for readability
+      text(Math.round(confidence * 100) + "%", barX, barY + barHeight / 2+100);
     }
   }
 }
