@@ -49,15 +49,15 @@ function draw() {
   image(video, xOffset, yOffset, displayWidth, displayHeight);
 
   // Center the logo at the top with dynamic size
-  let logoSize = min(200, width * 0.3); // Limit logo size to 200px or 30% of canvas width
+  let logoSize = min(450, width * 0.3); // Limit logo size to 200px or 30% of canvas width
   let logoHeight = logoSize * (logo.height / logo.width); // Maintain aspect ratio
   image(logo, (width - logoSize) / 2, 20, logoSize, logoHeight); // Centered at top with 20px padding
 
   // Center the label text
-  textSize(32);
+  textSize(80);
   textAlign(CENTER, CENTER);
   fill(255);
-  text(label, width / 2, height / 2);
+  text(label, width / 2, height / 2.05);
 
   // Draw confidence bar below the label with rounded corners
   let barHeight = 20;
@@ -76,10 +76,10 @@ function draw() {
       fill(255, 0, 0, 50); // Red with 70% opacity (255 * 0.7 = 179)
       rect(barX - barWidth / 2, barY, fillWidth, barHeight+10, 20); // Confidence-proportional width with rounded corners
       // Display confidence percentage inside the bar
-      textSize(16);
+      textSize(100);
       textAlign(CENTER, CENTER);
-      fill(0); // Black text for readability
-      text(Math.round(bounceFactor * 100) + "%", barX, barY + barHeight / 2+5);
+      fill(0,0,0,50); // Black text for readability
+      text(Math.round(bounceFactor * 100) + "%", barX, barY + barHeight / 2+100);
     } else {
       // Normal behavior for other labels
       fill(0, 255, 0, 70); // Green fill for confidence with 70% opacity
