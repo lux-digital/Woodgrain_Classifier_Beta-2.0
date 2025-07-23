@@ -5,14 +5,20 @@ let confidence = 0; // Combined confidence for display
 // The classifiers
 let classifier1, classifier2, classifier3;
 let modelURL1 = "https://teachablemachine.withgoogle.com/models/zPFXk5dVn/"; // Placeholder for model 1
-let modelURL2 = "https://teachablemachine.withgoogle.com/models/FMI4fqJAv/"; // Placeholder for model 2 (replace later)
-let modelURL3 = "https://teachablemachine.withgoogle.com/models/31xN6kMqz/"; // Placeholder for model 3 (replace later)
+let modelURL2 = "https://teachablemachine.withgoogle.com/models/FMI4fqJAv/"; // Replace with new model URL
+let modelURL3 = "https://teachablemachine.withgoogle.com/models/31xN6kMqz/"; // Replace with new model URL
 // Variable to hold the logo
 let logo;
 // Variable for animation timing
 let time = 0;
 // Store results from each classifier
 let results1, results2, results3;
+// Classification control
+let isClassifying = false; // Track if classification cycle is in progress
+let classifyStep = 0; // Track which classifier to run (0 = none, 1 = classifier1, 2 = classifier2, 3 = classifier3)
+let lastClassifyTime = 0;
+let classifyDelay = 500; // 500ms delay between each classifier
+let cyclePause = 1000; // 1s pause between full classification cycles
 
 function preload() {
   // Load three classifiers
@@ -29,51 +35,82 @@ function setup() {
   video = createCapture({ video: { facingMode: 'environment' } });
   video.size(224, 224); // Set video resolution to match Teachable Machine input
   video.hide();
-  // Start classifying with all three models
+  // Start classifying
   classifyVideo();
 }
 
-// Classify the video with all three models
+// Classify the video sequentially
 function classifyVideo() {
-  classifier1.classify(video, gotResults1);
-  classifier2.classify(video, gotResults2);
-  classifier3.classify(video, gotResults3);
+  if (isClassifying) return; // Skip if a classification cycle is in progress
+
+  let currentTime = millis();
+  if (currentTime - lastClassifyTime < cyclePause && classifyStep === 0) {
+    // Wait for cycle pause before starting new cycle
+    setTimeout(classifyVideo, cyclePause - (currentTime - lastClassifyTime));
+    return;
+  }
+
+  isClassifying = true;
+  classifyStep = 1; // Start with classifier1
+  results1 = null;
+  results2 = null;
+  results3 = null;
+  classifier1.classify(video, gotResults1); // Run first classifier
 }
 
 // Handle results from classifier 1
 function gotResults1(error, results) {
   if (error) {
     console.error("Classifier 1 error:", error);
+    isClassifying = false;
+    classifyStep = 0;
+    setTimeout(classifyVideo, classifyDelay);
     return;
   }
   results1 = results;
-  combineResults();
+  console.log("Classifier 1 results:", results1);
+  classifyStep = 2;
+  setTimeout(() => classifier2.classify(video, gotResults2), classifyDelay); // Delay before classifier2
 }
 
 // Handle results from classifier 2
 function gotResults2(error, results) {
   if (error) {
     console.error("Classifier 2 error:", error);
+    isClassifying = false;
+    classifyStep = 0;
+    setTimeout(classifyVideo, classifyDelay);
     return;
   }
   results2 = results;
-  combineResults();
+  console.log("Classifier 2 results:", results2);
+  classifyStep = 3;
+  setTimeout(() => classifier3.classify(video, gotResults3), classifyDelay); // Delay before classifier3
 }
 
 // Handle results from classifier 3
 function gotResults3(error, results) {
   if (error) {
     console.error("Classifier 3 error:", error);
+    isClassifying = false;
+    classifyStep = 0;
+    setTimeout(classifyVideo, classifyDelay);
     return;
   }
   results3 = results;
+  console.log("Classifier 3 results:", results3);
   combineResults();
 }
 
 // Combine predictions from all three models
 function combineResults() {
-  // Wait until all classifiers have results
-  if (!results1 || !results2 || !results3) return;
+  // Ensure all classifiers have results
+  if (!results1 || !results2 || !results3) {
+    isClassifying = false;
+    classifyStep = 0;
+    setTimeout(classifyVideo, classifyDelay);
+    return;
+  }
 
   // Create a map to store total confidence for each label
   let confidenceMap = {};
@@ -106,8 +143,11 @@ function combineResults() {
   label = bestLabel;
   confidence = maxConfidence;
 
-  // Continue classifying
-  classifyVideo();
+  // Reset for next cycle
+  isClassifying = false;
+  classifyStep = 0;
+  lastClassifyTime = millis();
+  setTimeout(classifyVideo, cyclePause); // Pause before next cycle
 }
 
 function draw() {
