@@ -19,34 +19,14 @@ let classifyStep = 0; // Track which classifier to run (0 = none, 1 = classifier
 let lastClassifyTime = 0;
 let classifyDelay = 500; // 500ms delay between each classifier
 let cyclePause = 1000; // 1s pause between full classification cycles
-// Pop-up control
-let popupDiv, gotItButton;
-let modelsLoaded = false;
 
 function preload() {
   // Load three classifiers
-  classifier1 = ml5.imageClassifier(modelURL1 + "model.json", () => {
-    console.log("Model 1 loaded");
-    checkAllModelsLoaded();
-  });
-  classifier2 = ml5.imageClassifier(modelURL2 + "model.json", () => {
-    console.log("Model 2 loaded");
-    checkAllModelsLoaded();
-  });
-  classifier3 = ml5.imageClassifier(modelURL3 + "model.json", () => {
-    console.log("Model 3 loaded");
-    checkAllModelsLoaded();
-  });
+  classifier1 = ml5.imageClassifier(modelURL1 + "model.json");
+  classifier2 = ml5.imageClassifier(modelURL2 + "model.json");
+  classifier3 = ml5.imageClassifier(modelURL3 + "model.json");
   // Load the logo image
   logo = loadImage('Logo.png'); // Ensure Logo.png is in the same directory or provide full path/URL
-}
-
-function checkAllModelsLoaded() {
-  // Check if all classifiers are loaded
-  if (classifier1 && classifier2 && classifier3 && classifier1.ready && classifier2.ready && classifier3.ready) {
-    modelsLoaded = true;
-    if (gotItButton) gotItButton.removeAttribute('disabled'); // Enable button when models are loaded
-  }
 }
 
 function setup() {
@@ -55,56 +35,13 @@ function setup() {
   video = createCapture({ video: { facingMode: 'environment' } });
   video.size(224, 224); // Set video resolution to match Teachable Machine input
   video.hide();
-
-  // Create pop-up div
-  popupDiv = createDiv(`
-    Remove any plastic from sample before scanning.<br>
-    Avoid shadows and reflections when scanning.<br>
-    Fill the entire window with the woodgrain.<br>
-    Scan woodgrains vertically.<br>
-    Scan more than one spot to ensure accuracy.
-  `);
-  popupDiv.style('position', 'absolute');
-  popupDiv.style('top', '50%');
-  popupDiv.style('left', '50%');
-  popupDiv.style('transform', 'translate(-50%, -50%)');
-  popupDiv.style('background', 'rgba(0, 0, 0, 0.8)');
-  popupDiv.style('color', 'white');
-  popupDiv.style('padding', '20px');
-  popupDiv.style('border-radius', '10px');
-  popupDiv.style('text-align', 'center');
-  popupDiv.style('font-size', '18px');
-  popupDiv.style('max-width', '80%');
-  popupDiv.style('z-index', '10');
-
-  // Create "Got it" button
-  gotItButton = createButton('Got it');
-  gotItButton.style('margin-top', '20px');
-  gotItButton.style('padding', '10px 20px');
-  gotItButton.style('font-size', '16px');
-  gotItButton.style('background', '#4CAF50');
-  gotItButton.style('color', 'white');
-  gotItButton.style('border', 'none');
-  gotItButton.style('border-radius', '5px');
-  gotItButton.style('cursor', 'pointer');
-  gotItButton.attribute('disabled', 'true'); // Disabled until models load
-  gotItButton.parent(popupDiv);
-  gotItButton.mousePressed(hidePopup);
-
-  // Start classifying (will wait for models to load)
+  // Start classifying
   classifyVideo();
-}
-
-function hidePopup() {
-  if (modelsLoaded) {
-    popupDiv.hide();
-    gotItButton.hide();
-  }
 }
 
 // Classify the video sequentially
 function classifyVideo() {
-  if (isClassifying || !modelsLoaded) return; // Skip if classifying or models not loaded
+  if (isClassifying) return; // Skip if a classification cycle is in progress
 
   let currentTime = millis();
   if (currentTime - lastClassifyTime < cyclePause && classifyStep === 0) {
