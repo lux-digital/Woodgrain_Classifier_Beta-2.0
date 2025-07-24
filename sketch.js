@@ -4,9 +4,9 @@ let label = "LOADING...";
 let confidence = 0; // Combined confidence for display
 // The classifiers
 let classifier1, classifier2, classifier3;
-let modelURL1 = "https://teachablemachine.withgoogle.com/models/zPFXk5dVn/"; // Placeholder for model 1
-let modelURL2 = "https://teachablemachine.withgoogle.com/models/FMI4fqJAv/"; // Replace with new model URL
-let modelURL3 = "https://teachablemachine.withgoogle.com/models/31xN6kMqz/"; // Replace with new model URL
+let modelURL1 = "https://teachablemachine.withgoogle.com/models/H7RFfQKsP/"; // Placeholder for model 1
+let modelURL2 = "https://teachablemachine.withgoogle.com/models/n0NvgsfkL/"; // Replace with new model URL
+let modelURL3 = "https://teachablemachine.withgoogle.com/models/x-qNb7RBf/"; // Replace with new model URL
 // Variable to hold the logo
 let logo;
 // Variable for animation timing
@@ -37,6 +37,7 @@ function setup() {
   video.hide();
   // Start classifying
   classifyVideo();
+  
 }
 
 // Classify the video sequentially
